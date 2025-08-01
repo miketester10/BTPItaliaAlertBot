@@ -19,7 +19,7 @@ datasource db {
 model User {
   telegramId Int      @id @map("_id")
   name       String
-  username   String?  @unique
+  username   String?  
   alerts     Alert[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
