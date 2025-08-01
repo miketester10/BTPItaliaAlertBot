@@ -33,7 +33,7 @@ model Alert {
   below                Boolean  @default(false)
   lastNotificationSent Boolean  @default(false)
   lastCheckPrice       Float?
-  userTelegramId       Int      @unique
+  userTelegramId       Int     
   user                 User     @relation(fields: [userTelegramId], references: [telegramId])
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
