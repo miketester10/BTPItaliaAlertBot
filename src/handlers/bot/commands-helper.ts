@@ -10,6 +10,26 @@ import { errorHandler } from "../error/error-handler";
 const dataBaseHandler: DatabaseHandler = DatabaseHandler.getInstance();
 const apiHandler: ApiHandler = ApiHandler.getInstance();
 
+export const handleStartCommand = async (ctx: MyMessageContext): Promise<void> => {
+  try {
+    await ctx.sendChatAction("typing");
+    const telegramId = ctx.from?.id!;
+    const name = ctx.from?.firstName!;
+    const username = ctx.from?.username ?? null;
+    logger.info(`User ${name} ${username ? `[@${username}] ` : ""}- Telegram ID: ${telegramId} has started the bot.`);
+
+    await ctx.reply(`👋 Benvenuto ${name}`);
+    await dataBaseHandler.createUser({
+      telegramId: telegramId,
+      name: name,
+      username: username,
+      alerts: { create: { isin: "IT0005434697", targetPrice: 100 } }, // Esempio di alert predefinito
+    });
+  } catch (error) {
+    errorHandler(error);
+  }
+};
+
 export const handlePriceCommand = async (ctx: MyMessageContext): Promise<void> => {
   try {
     await ctx.sendChatAction("typing");
@@ -24,9 +44,11 @@ export const handlePriceCommand = async (ctx: MyMessageContext): Promise<void> =
     if (isBorsaItalianaValidResponse(response)) {
       const price = response.intradayPoint.at(-1)?.endPx;
       const name = response.label;
+      // chiamare metodo per formattare il messaggio da inviare sottoforma di FormattedString di Gramio (esempio: const message = createFormattedMessageForPrice(rawMessage))
       logger.info(`Ultimo prezzo: ${price}€`);
-      await ctx.reply(`💰 Ultimo prezzo per ${isin} - ${name}: ${price}€`);
+      await ctx.reply(`💰 ${isin} - ${name}\nPrice: ${price}€`);
     } else {
+      // chiamare metodo per formattare il messaggio da inviare sottoforma di FormattedString di Gramio (esempio: const message = createFormattedMessageForPrice(rawMessage))
       logger.warn(`ISIN ${isin} non valido o non trovato.`);
       await ctx.reply("⚠️ ISIN non valido o non trovato.");
     }

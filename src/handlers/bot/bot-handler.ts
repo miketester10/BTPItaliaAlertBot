@@ -3,7 +3,7 @@ import { logger } from "../../logger/logger";
 import { MyMessageContext } from "../../interfaces/custom-context.interface";
 import { testCommand } from "../../test/test";
 
-import { handlePriceCommand } from "./commands-helper";
+import { handlePriceCommand, handleStartCommand } from "./commands-helper";
 
 export class BotHandler {
   private readonly BOT_TOKEN: string = process.env.BOT_TOKEN!;
@@ -38,6 +38,7 @@ export class BotHandler {
     try {
       const commands_set = await this.bot.api.setMyCommands({
         commands: [
+          { command: "start", description: "Start the bot" },
           {
             command: "price",
             description: "<ISIN> - Mostra il prezzo attuale del BTP",
@@ -53,6 +54,9 @@ export class BotHandler {
   }
 
   async inizializeCommands(): Promise<void> {
+    this.bot.command("start", async (ctx: MyMessageContext) => {
+      await handleStartCommand(ctx);
+    });
     this.bot.command("price", async (ctx: MyMessageContext) => {
       await handlePriceCommand(ctx);
     });
