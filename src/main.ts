@@ -1,7 +1,7 @@
 import { ApiHandler } from "./handlers/api/api-handler";
 import { BotHandler } from "./handlers/bot/bot-handler";
 import { DatabaseHandler } from "./handlers/database/database-handler";
-import { errorHandler } from "./handlers/error/error-handler";
+import { logger } from "./logger/logger";
 
 /**
  * Gestore per la logica di business degli alert
@@ -40,7 +40,7 @@ const main = async () => {
     await botHanlder.start();
     // startJob(bot);
   } catch (error) {
-    errorHandler(error);
+    logger.error(`Unknown Error during the startup: ${(error as Error).message}`);
   }
 };
 

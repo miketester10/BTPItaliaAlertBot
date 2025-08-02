@@ -22,7 +22,7 @@ export const handleStartCommand = async (ctx: MyMessageContext): Promise<void> =
     const user = await dataBaseHandler.findUserByTelegramId(telegramId);
     if (user) {
       const isUpdated = await dataBaseHandler.updateUser(telegramId, user, { name, username });
-      if (!isUpdated) logger.warn(`Utente già registrato.`);
+      logger.warn(`Utente già registrato. ${isUpdated ? `Dati aggiornati con succeso.` : `Nessun dato da aggiornare è stato trovato.`}`);
       return;
     }
     await dataBaseHandler.createUser({
@@ -30,6 +30,7 @@ export const handleStartCommand = async (ctx: MyMessageContext): Promise<void> =
       name: name,
       username: username,
     });
+    logger.info(`Nuovo utente registrato con successo.`);
   } catch (error) {
     errorHandler(error);
   }

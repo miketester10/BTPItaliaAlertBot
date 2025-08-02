@@ -38,7 +38,6 @@ export class DatabaseHandler {
           username: username ?? null, // Assicuro che username sia sempre null se non fornito
         },
       });
-      logger.info(`Nuovo utente registrato: ${name} (${telegramId})`);
     } catch (error) {
       throw error;
     }
@@ -71,7 +70,6 @@ export class DatabaseHandler {
             username: username ?? null, // Assicuro che username sia sempre null se non fornito
           },
         });
-        logger.warn(`Dati utente aggiornati.`);
         return true;
       }
       return false;
