@@ -22,10 +22,10 @@ export const handleStartCommand = async (ctx: MyMessageContext): Promise<void> =
     if (user) {
       const isUpdated = await dataBaseHandler.updateUser(telegramId, user, { name, username });
       logger.warn(`Utente già registrato. ${isUpdated ? `Dati aggiornati con succeso.` : `Nessun dato da aggiornare è stato trovato.`}`);
-      return;
+    } else {
+      await dataBaseHandler.createUser({ telegramId, name, username });
+      logger.info(`Nuovo utente registrato con successo.`);
     }
-    await dataBaseHandler.createUser({ telegramId, name, username });
-    logger.info(`Nuovo utente registrato con successo.`);
     await ctx.reply(`👋 Benvenuto ${name}`);
   } catch (error) {
     errorHandler(error);
