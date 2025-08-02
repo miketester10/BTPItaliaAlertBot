@@ -18,7 +18,6 @@ export const handleStartCommand = async (ctx: MyMessageContext): Promise<void> =
     const username = ctx.from?.username ?? null;
     logger.info(`Bot avviato da: ${name} - Telegram ID: ${telegramId}`);
 
-    await ctx.reply(`👋 Benvenuto ${name}`);
     const user = await dataBaseHandler.findUserByTelegramId(telegramId);
     if (user) {
       const isUpdated = await dataBaseHandler.updateUser(telegramId, user, { name, username });
@@ -27,6 +26,7 @@ export const handleStartCommand = async (ctx: MyMessageContext): Promise<void> =
     }
     await dataBaseHandler.createUser({ telegramId, name, username });
     logger.info(`Nuovo utente registrato con successo.`);
+    await ctx.reply(`👋 Benvenuto ${name}`);
   } catch (error) {
     errorHandler(error);
   }
