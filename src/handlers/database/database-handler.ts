@@ -1,5 +1,7 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { PrismaClient, User } from "@prisma/client";
 import { logger } from "../../logger/logger";
+import { CreateUserDto } from "../../dto/create-user.dto";
+import { UpdateUserDto } from "../../dto/update-user.dto";
 
 export class DatabaseHandler {
   private static _instance: DatabaseHandler;
@@ -26,13 +28,9 @@ export class DatabaseHandler {
     }
   }
 
-  async createUser(UserCreateInput: Prisma.UserCreateInput): Promise<void> {
-    const { telegramId, name, username, alerts } = UserCreateInput;
+  async createUser(createUsertDto: CreateUserDto): Promise<void> {
+    const { telegramId, name, username } = createUsertDto;
     try {
-      const isUpdated = await this.updateUser(telegramId, { name, username, alerts });
-      if (isUpdated) return logger.warn(`Utente già registrato: ${name} - Telegram ID: ${telegramId}`);
-
-      // Se l'utente non esiste, lo creiamo
       await this.prisma.user.create({
         data: {
           telegramId,
@@ -46,13 +44,24 @@ export class DatabaseHandler {
     }
   }
 
-  private async updateUser(telegramId: number, data: Prisma.UserUpdateInput): Promise<boolean> {
-    const { name, username, alerts } = data;
+  async findUserByTelegramId(telegramId: number): Promise<User | null> {
     try {
-      const existingUser = await this.prisma.user.findUnique({ where: { telegramId }, include: { alerts: true } });
-      if (!existingUser) return false;
+      const user = await this.prisma.user.findUnique({
+        where: { telegramId },
+        include: {
+          alerts: true, // Include gli alert associati all'utente
+        },
+      });
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  }
 
-      const isDataChanged = existingUser.name !== name || existingUser.username !== username || existingUser.alerts !== alerts;
+  async updateUser(telegramId: number, user: User, updateUserDto: UpdateUserDto): Promise<boolean> {
+    const { name, username } = updateUserDto;
+    try {
+      const isDataChanged = user.name !== name || user.username !== username;
 
       if (isDataChanged) {
         await this.prisma.user.update({
@@ -60,15 +69,12 @@ export class DatabaseHandler {
           data: {
             name: name,
             username: username ?? null, // Assicuro che username sia sempre null se non fornito
-            alerts: alerts,
-          },
-          include: {
-            alerts: true, // Include gli alerts aggiornati
           },
         });
-        logger.info(`Dati utente aggiornati per: ${data.name} (${telegramId})`);
+        logger.warn(`Dati utente aggiornati.`);
+        return true;
       }
-      return true;
+      return false;
     } catch (error) {
       throw error;
     }

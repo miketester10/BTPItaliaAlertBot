@@ -16,14 +16,19 @@ export const handleStartCommand = async (ctx: MyMessageContext): Promise<void> =
     const telegramId = ctx.from?.id!;
     const name = ctx.from?.firstName!;
     const username = ctx.from?.username ?? null;
-    logger.info(`User ${name} ${username ? `[@${username}] ` : ""}- Telegram ID: ${telegramId} has started the bot.`);
+    logger.info(`Bot avviato da: ${name} - Telegram ID: ${telegramId}`);
 
     await ctx.reply(`👋 Benvenuto ${name}`);
+    const user = await dataBaseHandler.findUserByTelegramId(telegramId);
+    if (user) {
+      const isUpdated = await dataBaseHandler.updateUser(telegramId, user, { name, username });
+      if (!isUpdated) logger.warn(`Utente già registrato.`);
+      return;
+    }
     await dataBaseHandler.createUser({
       telegramId: telegramId,
       name: name,
       username: username,
-      alerts: { create: { isin: "IT0005434697", targetPrice: 100 } }, // Esempio di alert predefinito
     });
   } catch (error) {
     errorHandler(error);
